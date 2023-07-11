@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .page {
+    @apply flex flex-col h-screen w-screen justify-center items-center bg-background;
+  }
+}
