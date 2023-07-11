@@ -18,10 +18,18 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`Server ${socket.id}`);
+
   socket.on("ping", (data) => {
     let pingDate = new Date(data);
     let currentDate = new Date();
     socket.emit("pong", currentDate.getTime() - pingDate.getTime());
+  });
+
+  socket.on("mouseMove", (data) => {
+    socket.broadcast.emit("allMouseActivity", {
+      session_id: socket.id,
+      coords: data,
+    });
   });
 });
 
