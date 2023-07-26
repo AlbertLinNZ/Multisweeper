@@ -1,16 +1,21 @@
-import { useState, MouseEvent } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useState, MouseEvent } from "react";
+import { Socket, io } from "socket.io-client";
+import {
+  ServerToClientEvents,
+  ClientToServerEvents,
+} from "../../shared/typings";
 import Cursor from "./components/Cursor";
 const SERVER_URL = "http://localhost:3000";
 
-const socket = io(SERVER_URL);
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> =
+  io(SERVER_URL);
 
 socket.on("connect", () => {
   console.log(`Client ${socket.id}`);
 });
 
 function App() {
-  const [lastPong, setLastPong] = useState<string | null>(null);
+  const [lastPong, setLastPong] = useState<number | null>(null);
   const [ponged, setPonged] = useState(false);
   const [mousePosition, setMousePosition] = useState({
     left: 0,
@@ -18,19 +23,21 @@ function App() {
   });
   const windowSize = [window.innerWidth, window.innerHeight];
 
-  socket.on("pong", (data) => {
-    setLastPong(data);
-    setPonged(true);
-  });
-
-  socket.on("allMouseActivity", (data) => {
-    setMousePosition({
-      left: data.coords.left * windowSize[0],
-      top: data.coords.top * windowSize[1],
+  useEffect(() => {
+    socket.on("pong", (data) => {
+      setLastPong(data);
+      setPonged(true);
     });
-    console.log(data.coords.left);
-    console.log(data.coords.top);
-  });
+
+    socket.on("allMouseActivity", (data) => {
+      setMousePosition({
+        left: data.coords.left * windowSize[0],
+        top: data.coords.top * windowSize[1],
+      });
+      console.log(data.coords.left);
+      console.log(data.coords.top);
+    });
+  }, [socket]);
 
   function handleMouseMove(e: MouseEvent) {
     socket.emit("mouseMove", {
